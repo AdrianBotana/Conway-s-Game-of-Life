@@ -1,0 +1,65 @@
+// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel CSMain
+
+// Create a RenderTexture with enableRandomWrite flag and set it
+// with cs.SetTexture
+RWStructuredBuffer<int> allCells;
+
+int resolution;
+
+int minNeighboursToSurvive = 2;
+int maxNeighboursToSurvive = 3;
+int minNeighboursToRevive = 3;
+int maxNeighboursToRevive = 3;
+
+[numthreads(10, 1, 1)]
+void CSMain(uint3 id : SV_DispatchThreadID)
+{
+	int count = 0;
+
+	int z = id.x % resolution;
+	int y = (id.x / resolution) % resolution;
+	int x = ((id.x / resolution) / resolution) % resolution;
+
+	//z-1
+	count += allCells[(x - 1) * resolution * resolution + (y + 1) * resolution + (z - 1)] ? 1 : 0;
+	count += allCells[(x)*resolution * resolution + (y + 1) * resolution + (z - 1)] ? 1 : 0;
+	count += allCells[(x + 1) * resolution * resolution + (y + 1) * resolution + (z - 1)] ? 1 : 0;
+
+	count += allCells[(x - 1) * resolution * resolution + (y)*resolution + (z - 1)] ? 1 : 0;
+	count += allCells[(x)*resolution * resolution + (y)*resolution + (z - 1)] ? 1 : 0;
+	count += allCells[(x + 1) * resolution * resolution + (y)*resolution + (z - 1)] ? 1 : 0;
+
+	count += allCells[(x - 1) * resolution * resolution + (y - 1) * resolution + (z - 1)] ? 1 : 0;
+	count += allCells[(x)*resolution * resolution + (y - 1) * resolution + (z - 1)] ? 1 : 0;
+	count += allCells[(x + 1) * resolution * resolution + (y - 1) * resolution + (z - 1)] ? 1 : 0;
+
+	// z
+	count += allCells[(x - 1) * resolution * resolution + (y + 1) * resolution + (z)] ? 1 : 0;
+	count += allCells[(x)*resolution * resolution + (y + 1) * resolution + (z)] ? 1 : 0;
+	count += allCells[(x + 1) * resolution * resolution + (y + 1) * resolution + (z)] ? 1 : 0;
+
+	count += allCells[(x - 1) * resolution * resolution + (y)*resolution + (z)] ? 1 : 0;
+	count += allCells[(x + 1) * resolution * resolution + (y)*resolution + (z)] ? 1 : 0;
+
+	count += allCells[(x - 1) * resolution * resolution + (y - 1) * resolution + (z)] ? 1 : 0;
+	count += allCells[(x)*resolution * resolution + (y - 1) * resolution + (z)] ? 1 : 0;
+	count += allCells[(x + 1) * resolution * resolution + (y - 1) * resolution + (z)] ? 1 : 0;
+
+	//z+1
+	count += allCells[(x - 1) * resolution * resolution + (y + 1) * resolution + (z + 1)] ? 1 : 0;
+	count += allCells[(x)*resolution * resolution + (y + 1) * resolution + (z + 1)] ? 1 : 0;
+	count += allCells[(x + 1) * resolution * resolution + (y + 1) * resolution + (z + 1)] ? 1 : 0;
+
+	count += allCells[(x - 1) * resolution * resolution + (y)*resolution + (z + 1)] ? 1 : 0;
+	count += allCells[(x)*resolution * resolution + (y)*resolution + (z + 1)] ? 1 : 0;
+	count += allCells[(x + 1) * resolution * resolution + (y)*resolution + (z + 1)] ? 1 : 0;
+
+	count += allCells[(x - 1) * resolution * resolution + (y - 1) * resolution + (z + 1)] ? 1 : 0;
+	count += allCells[(x)*resolution * resolution + (y - 1) * resolution + (z + 1)] ? 1 : 0;
+	count += allCells[(x + 1) * resolution * resolution + (y - 1) * resolution + (z + 1)] ? 1 : 0;
+
+	// Check if survive
+	allCells[id.x] = count >= (allCells[id.x] ? minNeighboursToSurvive : minNeighboursToRevive)
+		&& count <= (allCells[id.x] ? maxNeighboursToSurvive : maxNeighboursToRevive);
+}
