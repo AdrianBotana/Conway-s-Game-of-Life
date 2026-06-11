@@ -20,7 +20,6 @@ public class GridSimulation : MonoBehaviour
     private void Awake()
     {
         InitalizeGrid(gridItems);
-
         InitalizeGrid(resultItems);
     }
 
